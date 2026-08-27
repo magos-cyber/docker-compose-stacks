@@ -1,0 +1,118 @@
+version: "3.8"
+
+services:
+  bookstack:
+    image: lscr.io/bookstack:latest
+    container_name: bookstack
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ}
+      - DB_TYPE=pgsql
+      - DB_HOST=bookstack-db
+      - DB_PORT=5432
+      - DB_DATABASE=${BOOKSTACK_DB_NAME}
+      - DB_DATABASE_USERNAME=${BOOKSTACK_DB_USER}
+      - DB_DATABASE_PASSWORD=${BOOKSTACK_DB_PASSWORD}
+      - APP_URL=${BOOKSTACK_DOMAIN}
+      - APP_KEY=${BOOKSTACK_APP_KEY}
+      - BOOKSTACK_REGISTRATION=${BOOKSTACK_ALLOW_REGISTRATION}
+      - BOOKSTACK_PUBLIC_SHARING=${BOOKSTACK_PUBLIC_SHARING}
+      - BOOKSTACK_ALLOW_VIEWING=${BOOKSTACK_ALLOW_VIEWING}
+      - BOOKSTACK_ALLOW_EDITING=${BOOKSTACK_ALLOW_EDITING}
+      - AUTH_DRIVER=local
+      - MAIL_DRIVER=log
+      - LOG_LEVEL=${BOOKSTACK_LOG_LEVEL}
+      - SESSION=LARAVEL
+      - LOG_CHANNEL=stack
+      - PERMISSIONS_SECURITY=1
+      - BITLY_ACCESS_TOKEN=${BOOKSTACK_BITLY_TOKEN}
+      - CACHE_DRIVER=redis
+      - CACHE_REDIS_HOST=bookstack-redis
+      - CACHE_REDIS_PORT=6379
+      - SESSION_REDIS_HOST=bookstack-redis
+      - SESSION_REDIS_PORT=6379
+    volumes:
+      - ./data/uploads:/www/storage/uploads
+      - ./data/images:/www/storage/images
+      - ./data/attachments:/www/storage/attachments
+    ports:
+      - ${BOOKSTACK_PORT}:80
+    depends_on:
+      bookstack-db:
+        condition: service_healthy
+      bookstack-redis:
+        condition: service_healthy
+    networks:
+      - bookstack-net
+
+  bookstack-db:
+    image: postgres:16-alpine
+    container_name: bookstack-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${BOOKSTACK_DB_NAME}
+      - POSTGRES_USER=${BOOKSTACK_DB_USER}
+      - POSTGRES_PASSWORD=${BOOKSTACK_DB_PASSWORD}
+    volumes:
+      - bookstack-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${BOOKSTACK_DB_USER} -d ${BOOKSTACK_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bookstack-net
+
+  bookstack-redis:
+    image: redis:7-alpine
+    container_name: bookstack-redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bookstack-net
+
+  bookstack-cron:
+    image: lscr.io/bookstack:latest
+    container_name: bookstack-cron
+    restart: unless-stopped
+    depends_on:
+      bookstack-db:
+        condition: service_healthy
+      bookstack-redis:
+        condition: service_healthy
+    environment:
+      - TZ=${TZ}
+      - DB_TYPE=pgsql
+      - DB_HOST=bookstack-db
+      - DB_PORT=5432
+      - DB_DATABASE=${BOOKSTACK_DB_NAME}
+      - DB_DATABASE_USERNAME=${BOOKSTACK_DB_USER}
+      - DB_DATABASE_PASSWORD=${BOOKSTACK_DB_PASSWORD}
+      - APP_URL=${BOOKSTACK_DOMAIN}
+      - APP_KEY=${BOOKSTACK_APP_KEY}
+      - CACHE_DRIVER=redis
+      - CACHE_REDIS_HOST=bookstack-redis
+      - SESSION_REDIS_HOST=bookstack-redis
+    volumes:
+      - ./data/uploads:/www/storage/uploads
+      - ./data/images:/www/storage/images
+      - ./config:/www/.env
+    entrypoint: /bin/sh
+    command: -c "while ! pg_isready -h bookstack-db -U ${BOOKSTACK_DB_USER} -d ${BOOKSTACK_DB_NAME}; do sleep 2; done; while true; do php /var/www/html/artisan schedule:work --run-once; sleep 60; done"
+    networks:
+      - bookstack-net
+
+volumes:
+  bookstack-data:
+    driver: local
+  bookstack-db-data:
+    driver: local
+
+networks:
+  bookstack-net:
+    name: bookstack-net
+    driver: bridge

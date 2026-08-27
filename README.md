@@ -8,10 +8,13 @@ Production-ready Docker Compose stacks for homelab & self-hosting. Each stack is
 docker-compose-stacks/
 ├── media/              # Jellyfin, *arr, Immich, Navidrome
 ├── monitoring/         # Prometheus, Grafana, Uptime Kuma, cAdvisor, node-exporter
+│   └── loki/           # Loki + Promtail + Grafana for log aggregation
 ├── network/            # Pi-hole, Traefik, AdGuard+Unbound
 ├── utils/              # Portainer, Vaultwarden, Homer, Watchtower, Dozzle, IT-Tools, Stirling PDF
 ├── home-assistant/     # Home Assistant + Mosquitto MQTT
 ├── productivity/       # Nextcloud, Paperless-ngx, Gitea
+│   ├── vaultwarden/    # Vaultwarden (Bitwarden compatible) with SQLite & backup
+│   └── bookstack/      # BookStack wiki with PostgreSQL & Redis
 ├── auth/               # Authentik identity server
 └── databases/          # MariaDB, PostgreSQL, Redis shared stack
 ```
@@ -43,6 +46,7 @@ docker compose up -d
 | Stack | Description | Ports |
 |-------|-------------|-------|
 | `monitoring/` | Prometheus + Grafana + Uptime Kuma + cAdvisor + node-exporter | 9090, 3000, 3001, 8080, 9100 |
+| `monitoring/loki/` | Loki + Promtail + Grafana for log aggregation | 3100, 3002 |
 
 ### 🌐 Network
 | Stack | Description | Ports |
@@ -68,6 +72,8 @@ docker compose up -d
 | `productivity/nextcloud/` | Nextcloud (PostgreSQL + Redis + Cron) | 8080 |
 | `productivity/paperless-ngx/` | Paperless-ngx document management | 8000 |
 | `productivity/gitea/` | Gitea self-hosted Git | 3000, 2222 |
+| `productivity/vaultwarden/` | Vaultwarden (Bitwarden compatible) with SQLite & backup | 8080 |
+| `productivity/bookstack/` | BookStack wiki with PostgreSQL & Redis | 8080 |
 
 ### 🔐 Authentication
 | Stack | Description | Ports |

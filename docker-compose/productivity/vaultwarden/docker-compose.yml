@@ -1,0 +1,72 @@
+version: "3.8"
+
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ}
+      - DOMAIN=${VAULTWARDEN_DOMAIN}
+      - SIGNUPS_ALLOWED=${VAULTWARDEN_SIGNUPS_ALLOWED}
+      - INVITATIONS_ALLOWED=${VAULTWARDEN_INVITATIONS_ALLOWED}
+      - ENABLE_EMAIL_TOKENS=${VAULTWARDEN_ENABLE_EMAIL_TOKENS}
+      - EMAIL_ENCRYPTION_KEY=${VAULTWARDEN_EMAIL_ENCRYPTION_KEY}
+      - EMAIL_HOST=${VAULTWARDEN_EMAIL_HOST}
+      - EMAIL_PORT=${VAULTWARDEN_EMAIL_PORT}
+      - EMAIL_FROM=${VAULTWARDEN_EMAIL_FROM}
+      - EMAIL_USERNAME=${VAULTWARDEN_EMAIL_USERNAME}
+      - EMAIL_PASSWORD=${VAULTWARDEN_EMAIL_PASSWORD}
+      - EMAIL_SECURITY=${VAULTWARDEN_EMAIL_SECURITY}
+      - DATABASE_URL=sqlite:///data/db.sqlite3
+      - EXTENDED_LOG_LEVEL=${VAULTWARDEN_LOG_LEVEL}
+      - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN}
+      - SEND_ALLOWED_IPS=${VAULTWARDEN_SEND_ALLOWED_IPS}
+      - IP_TRUSTED_PROXIES=${VAULTWARDEN_IP_TRUSTED_PROXIES}
+    volumes:
+      - ./data:/data
+      - ./config:/config
+    ports:
+      - ${VAULTWARDEN_PORT}:80
+    networks:
+      - vaultwarden-net
+
+  vaultwarden-backup:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden-backup
+    restart: unless-stopped
+    depends_on:
+      - vaultwarden
+    environment:
+      - TZ=${TZ}
+      - BACKUP_CRON=${VAULTWARDEN_BACKUP_CRON}
+      - BACKUP_TIMEZONE=${TZ}
+      - BACKUP_IGNORE_DIRS=/data/sessions
+      - PUID=1000
+      - PGID=1000
+      - UID=1000
+      - GID=1000
+      - RESTIC_REPOSITORY=${VAULTWARDEN_BACKUP_REPO}
+      - RESTIC_PASSWORD=${VAULTWARDEN_BACKUP_PASSWORD}
+      - RESTIC_PRUNE=${VAULTWARDEN_BACKUP_PRUNE}
+    volumes:
+      - ./data:/data:ro
+      - ./config:/config:ro
+      - ./backup:/backup
+    entrypoint: /bin/sh
+    command: -c "while ! [ -f /data/db.sqlite3 ]; do sleep 5; done; restic snapshots || true; backup || true"
+    networks:
+      - vaultwarden-net
+
+volumes:
+  vaultwarden-data:
+    driver: local
+  vaultwarden-config:
+    driver: local
+  vaultwarden-backup:
+    driver: local
+
+networks:
+  vaultwarden-net:
+    name: vaultwarden-net
+    driver: bridge
