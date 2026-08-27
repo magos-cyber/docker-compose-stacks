@@ -2,30 +2,30 @@
 
 Production-ready Docker Compose stacks for homelab & self-hosting. Each stack is self-contained, well-documented, and ready to deploy with a single command.
 
-## [FOLDER] Structure
+## Structure
 
 ```
 docker-compose-stacks/
-+-- media/              # Jellyfin, *arr, Immich, Navidrome
-+-- monitoring/         # Prometheus, Grafana, Uptime Kuma, cAdvisor, node-exporter
-|   `-- loki/           # Loki + Promtail + Grafana for log aggregation
-|   `-- grafana-loki/   # Loki + Promtail + Grafana (full stack)
-+-- network/            # Pi-hole, Traefik, AdGuard+Unbound
-+-- utils/              # Portainer, Vaultwarden, Homer, Watchtower, Dozzle, IT-Tools, Stirling PDF
-+-- home-assistant/     # Home Assistant + Mosquitto MQTT
-+-- productivity/       # Nextcloud, Paperless-ngx, Gitea
-|   +-- vaultwarden/    # Vaultwarden (Bitwarden compatible) with SQLite & backup
-|   `-- bookstack/      # BookStack wiki with PostgreSQL & Redis
-+-- cicd/               # CI/CD systems
-|   +-- gitlab/         # GitLab CE + Runners
-|   `-- jenkins/        # Jenkins + Agents
-+-- storage/            # Storage solutions
-|   `-- minio/          # MinIO S3-compatible storage
-+-- auth/               # Authentik identity server
-`-- databases/          # MariaDB, PostgreSQL, Redis shared stack
++-- media/ # Jellyfin, *arr, Immich, Navidrome
++-- monitoring/ # Prometheus, Grafana, Uptime Kuma, cAdvisor, node-exporter
+| `-- loki/ # Loki + Promtail + Grafana for log aggregation
+| `-- grafana-loki/ # Loki + Promtail + Grafana (full stack)
++-- network/ # Pi-hole, Traefik, AdGuard+Unbound
++-- utils/ # Portainer, Vaultwarden, Homer, Watchtower, Dozzle, IT-Tools, Stirling PDF
++-- home-assistant/ # Home Assistant + Mosquitto MQTT
++-- productivity/ # Nextcloud, Paperless-ngx, Gitea
+| +-- vaultwarden/ # Vaultwarden (Bitwarden compatible) with SQLite & backup
+| `-- bookstack/ # BookStack wiki with PostgreSQL & Redis
++-- cicd/ # CI/CD systems
+| +-- gitlab/ # GitLab CE + Runners
+| `-- jenkins/ # Jenkins + Agents
++-- storage/ # Storage solutions
+| `-- minio/ # MinIO S3-compatible storage
++-- auth/ # Authentik identity server
+`-- databases/ # MariaDB, PostgreSQL, Redis shared stack
 ```
 
-## [ROCKET] Quick Start
+## Quick Start
 
 ```bash
 # Clone the repo
@@ -39,41 +39,41 @@ cp .env.example .env
 docker compose up -d
 ```
 
-## [MEMO] Available Stacks
+## Available Stacks
 
-###  Media
+### Media
 | Stack | Description | Ports |
 |-------|-------------|-------|
 | `media/` | Jellyfin + Sonarr/Radarr | 8096, 7878, 8989 |
 | `media/immich/` | Immich photo management | 2283 |
 | `media/navidrome/` | Navidrome music streaming | 4533 |
 
-### [CHART] Monitoring
+### Monitoring
 | Stack | Description | Ports |
 |-------|-------------|-------|
 | `monitoring/` | Prometheus + Grafana + Uptime Kuma + cAdvisor + node-exporter | 9090, 3000, 3001, 8080, 9100 |
 | `monitoring/loki/` | Loki + Promtail + Grafana for log aggregation | 3100, 3002 |
 | `monitoring/grafana-loki/` | Loki + Promtail + Grafana (full stack) | 3100, 3000 |
 
-### [GLOBE] Network
+### Network
 | Stack | Description | Ports |
 |-------|-------------|-------|
 | `network/` | Pi-hole DNS ad-blocker | 53, 8080 |
 | `network/traefik/` | Traefik v3 reverse proxy + Let's Encrypt | 80, 443, 8080 |
 | `network/dns/` | AdGuard Home + Unbound (DNS-over-TLS) | 53, 3000, 5353 |
 
-### [TOOLS] Utilities
+### Utilities
 | Stack | Description | Ports |
 |-------|-------------|-------|
 | `utils/` | Portainer + Vaultwarden + Homer | 9000, 8080, 8081 |
 | `utils/utility.yml` | Watchtower + Dozzle + IT-Tools + Stirling PDF | 9999, 8082, 8083 |
 
-### [HOME] Home Automation
+### Home Automation
 | Stack | Description | Ports |
 |-------|-------------|-------|
 | `home-assistant/` | Home Assistant + Mosquitto MQTT | 8123, 1883 |
 
-### [PAGE] Productivity
+### Productivity
 | Stack | Description | Ports |
 |-------|-------------|-------|
 | `productivity/nextcloud/` | Nextcloud (PostgreSQL + Redis + Cron) | 8080 |
@@ -82,28 +82,28 @@ docker compose up -d
 | `productivity/vaultwarden/` | Vaultwarden (Bitwarden compatible) with SQLite & backup | 8080 |
 | `productivity/bookstack/` | BookStack wiki with PostgreSQL & Redis | 8080 |
 
-### [LOCK_KEY] Authentication
+### Authentication
 | Stack | Description | Ports |
 |-------|-------------|-------|
 | `auth/authentik/` | Authentik identity server | 9000, 9443 |
 
-### [CABINET] Databases
+### Databases
 | Stack | Description | Ports |
 |-------|-------------|-------|
 | `databases/` | MariaDB + PostgreSQL + Redis | 3306, 5432, 6379 |
 
-## [GEAR] Configuration
+## Configuration
 
 Each stack includes a `.env.example` file. Copy it to `.env`, edit the values, then run `docker compose up -d`.
 
 ```bash
 cd <stack-name>
 cp .env.example .env
-nano .env  # or your preferred editor
+nano .env # or your preferred editor
 docker compose up -d
 ```
 
-## [LOCK] Security Notes
+## Security Notes
 
 - Change default passwords before deploying to production
 - Use strong, unique passwords for databases and admin accounts
@@ -111,32 +111,32 @@ docker compose up -d
 - Enable HTTPS via Let's Encrypt for public-facing services
 
 
-### [CHART] Monitoring
+### Monitoring
 | Stack | Description | Ports |
 |-------|-------------|-------|
 | `monitoring/` | Prometheus + Grafana + Uptime Kuma + cAdvisor + node-exporter | 9090, 3000, 3001, 8080, 9100 |
 | `monitoring/loki/` | Loki + Promtail + Grafana for log aggregation | 3100, 3002 |
 | `monitoring/grafana-loki/` | Loki + Promtail + Grafana (full stack) | 3100, 3000 |
 
-### [GLOBE] Network
+### Network
 | Stack | Description | Ports |
 |-------|-------------|-------|
 | `network/` | Pi-hole DNS ad-blocker | 53, 8080 |
 | `network/traefik/` | Traefik v3 reverse proxy + Let's Encrypt | 80, 443, 8080 |
 | `network/dns/` | AdGuard Home + Unbound (DNS-over-TLS) | 53, 3000, 5353 |
 
-### [TOOLS] Utilities
+### Utilities
 | Stack | Description | Ports |
 |-------|-------------|-------|
 | `utils/` | Portainer + Vaultwarden + Homer | 9000, 8080, 8081 |
 | `utils/utility.yml` | Watchtower + Dozzle + IT-Tools + Stirling PDF | 9999, 8082, 8083 |
 
-### [HOME] Home Automation
+### Home Automation
 | Stack | Description | Ports |
 |-------|-------------|-------|
 | `home-assistant/` | Home Assistant + Mosquitto MQTT | 8123, 1883 |
 
-### [PAGE] Productivity
+### Productivity
 | Stack | Description | Ports |
 |-------|-------------|-------|
 | `productivity/nextcloud/` | Nextcloud (PostgreSQL + Redis + Cron) | 8080 |
@@ -145,27 +145,27 @@ docker compose up -d
 | `productivity/vaultwarden/` | Vaultwarden (Bitwarden compatible) with SQLite & backup | 8080 |
 | `productivity/bookstack/` | BookStack wiki with PostgreSQL & Redis | 8080 |
 
-### [LOCK_KEY] Authentication
+### Authentication
 | Stack | Description | Ports |
 |-------|-------------|-------|
 | `auth/authentik/` | Authentik identity server | 9000, 9443 |
 
-### [CABINET] Databases
+### Databases
 | Stack | Description | Ports |
 |-------|-------------|-------|
 | `databases/` | MariaDB + PostgreSQL + Redis | 3306, 5432, 6379 |
 
-### [WRENCH] CI/CD
+### CI/CD
 | Stack | Description | Ports |
 |-------|-------------|-------|
 | `cicd/gitlab/` | GitLab CE + Runners | 8080, 8443, 2222 |
 | `cicd/jenkins/` | Jenkins + Agents | 8080, 50000 |
 
-### [DISK] Storage
+### Storage
 | Stack | Description | Ports |
 |-------|-------------|-------|
 | `storage/minio/` | MinIO S3-compatible storage | 9000, 9001
-## [HANDSHAKE] Contributing
+## Contributing
 
 Contributions are welcome! Please:
 - Keep stacks in English
@@ -173,6 +173,6 @@ Contributions are welcome! Please:
 - Document all environment variables
 - Test before submitting
 
-## [SCROLL] License
+## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+MIT License — see (LICENSE) for details.
