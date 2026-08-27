@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
+    container_name: crowdsec
+    restart: unless-stopped
+    environment:
+      COLLECTIONS: "crowdsecurity/linux crowdsecurity/sshd crowdsecurity/nginx"
+      TZ: Europe/Athens
+    volumes:
+      - ./config:/etc/crowdsec
+      - ./data:/var/lib/crowdsec/data
+      - /var/log:/var/log:ro
+    networks:
+      - monitoring
+
+  crowdsec-bouncer-traefik:
+    image: crowdsecurity/traefik-bouncer:latest
+    container_name: crowdsec-bouncer-traefik
+    restart: unless-stopped
+    environment:
+      CROWDSEC_BOUNCER_API_KEY: ${CROWDSEC_API_KEY}
+      CROWDSEC_AGENT_HOST: crowdsec:8080
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    external: true
