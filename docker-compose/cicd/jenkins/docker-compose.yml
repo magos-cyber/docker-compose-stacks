@@ -1,0 +1,76 @@
+# Jenkins Stack - Jenkins CI/CD with Dynamic Agents
+# Usage: cd cicd/jenkins && cp .env.example .env && docker compose up -d
+#
+# Services:
+#   - jenkins   : Jenkins controller (LTS)
+#   - jenkins-agent : Template for agent containers (can be scaled)
+#
+# Web access:
+#   HTTP : http://localhost:8080
+#
+# First run: open http://localhost:8080, unlock Jenkins with the
+# initial admin password (see logs), then install suggested plugins.
+#
+# To add agents: scale the jenkins-agent service:
+#   docker compose up -d --scale jenkins-agent=3
+#
+# Agents connect via JNLP; no additional config needed if JNLP port
+# is exposed (it is, on 50000).
+
+version: "3.8"
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ}
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    user: "${JENKINS_USER_ID:-1000}:${JENKINS_GROUP_ID:-1000}"
+    ports:
+      - "${JENKINS_HTTP_PORT}:8080"
+      - "${JENKINS_JNLP_PORT}:50000"
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - jenkins-log:/var/log/jenkins
+    healthcheck:
+      test: ["CMD", "curl -f http://localhost:8080/login || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    networks:
+      - jenkins-net
+
+  jenkins-agent:
+    image: jenkins/inbound-agent:latest-jdk17
+    container_name: jenkins-agent
+    restart: unless-stopped
+    depends_on:
+      - jenkins
+    environment:
+      - TZ=${TZ}
+      - JENKINS_URL=http://jenkins:8080
+      - JENKINS_AGENT_NAME=${JENKINS_AGENT_NAME:-agent}
+      - JENKINS_AGENT_WORKDIR=/var/jenkins_agent
+      - JENKINS_SECRET=${JENKINS_AGENT_SECRET:-}
+      - JENKINS_AGENT=${JENKINS_AGENT:-true}
+    volumes:
+      - jenkins-agent-data:/var/jenkins_agent
+    networks:
+      - jenkins-net
+
+volumes:
+  jenkins-data:
+    driver: local
+  jenkins-log:
+    driver: local
+  jenkins-agent-data:
+    driver: local
+
+networks:
+  jenkins-net:
+    name: jenkins-net
+    driver: bridge

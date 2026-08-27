@@ -9,12 +9,18 @@ docker-compose-stacks/
 ├── media/              # Jellyfin, *arr, Immich, Navidrome
 ├── monitoring/         # Prometheus, Grafana, Uptime Kuma, cAdvisor, node-exporter
 │   └── loki/           # Loki + Promtail + Grafana for log aggregation
+│   └── grafana-loki/   # Loki + Promtail + Grafana (full stack)
 ├── network/            # Pi-hole, Traefik, AdGuard+Unbound
 ├── utils/              # Portainer, Vaultwarden, Homer, Watchtower, Dozzle, IT-Tools, Stirling PDF
 ├── home-assistant/     # Home Assistant + Mosquitto MQTT
 ├── productivity/       # Nextcloud, Paperless-ngx, Gitea
 │   ├── vaultwarden/    # Vaultwarden (Bitwarden compatible) with SQLite & backup
 │   └── bookstack/      # BookStack wiki with PostgreSQL & Redis
+├── cicd/               # CI/CD systems
+│   ├── gitlab/         # GitLab CE + Runners
+│   └── jenkins/        # Jenkins + Agents
+├── storage/            # Storage solutions
+│   └── minio/          # MinIO S3-compatible storage
 ├── auth/               # Authentik identity server
 └── databases/          # MariaDB, PostgreSQL, Redis shared stack
 ```
@@ -47,6 +53,7 @@ docker compose up -d
 |-------|-------------|-------|
 | `monitoring/` | Prometheus + Grafana + Uptime Kuma + cAdvisor + node-exporter | 9090, 3000, 3001, 8080, 9100 |
 | `monitoring/loki/` | Loki + Promtail + Grafana for log aggregation | 3100, 3002 |
+| `monitoring/grafana-loki/` | Loki + Promtail + Grafana (full stack) | 3100, 3000 |
 
 ### 🌐 Network
 | Stack | Description | Ports |
@@ -103,6 +110,61 @@ docker compose up -d
 - Consider using Traefik as a reverse proxy for all services
 - Enable HTTPS via Let's Encrypt for public-facing services
 
+
+### 📊 Monitoring
+| Stack | Description | Ports |
+|-------|-------------|-------|
+| `monitoring/` | Prometheus + Grafana + Uptime Kuma + cAdvisor + node-exporter | 9090, 3000, 3001, 8080, 9100 |
+| `monitoring/loki/` | Loki + Promtail + Grafana for log aggregation | 3100, 3002 |
+| `monitoring/grafana-loki/` | Loki + Promtail + Grafana (full stack) | 3100, 3000 |
+
+### 🌐 Network
+| Stack | Description | Ports |
+|-------|-------------|-------|
+| `network/` | Pi-hole DNS ad-blocker | 53, 8080 |
+| `network/traefik/` | Traefik v3 reverse proxy + Let's Encrypt | 80, 443, 8080 |
+| `network/dns/` | AdGuard Home + Unbound (DNS-over-TLS) | 53, 3000, 5353 |
+
+### 🛠️ Utilities
+| Stack | Description | Ports |
+|-------|-------------|-------|
+| `utils/` | Portainer + Vaultwarden + Homer | 9000, 8080, 8081 |
+| `utils/utility.yml` | Watchtower + Dozzle + IT-Tools + Stirling PDF | 9999, 8082, 8083 |
+
+### 🏠 Home Automation
+| Stack | Description | Ports |
+|-------|-------------|-------|
+| `home-assistant/` | Home Assistant + Mosquitto MQTT | 8123, 1883 |
+
+### 📄 Productivity
+| Stack | Description | Ports |
+|-------|-------------|-------|
+| `productivity/nextcloud/` | Nextcloud (PostgreSQL + Redis + Cron) | 8080 |
+| `productivity/paperless-ngx/` | Paperless-ngx document management | 8000 |
+| `productivity/gitea/` | Gitea self-hosted Git | 3000, 2222 |
+| `productivity/vaultwarden/` | Vaultwarden (Bitwarden compatible) with SQLite & backup | 8080 |
+| `productivity/bookstack/` | BookStack wiki with PostgreSQL & Redis | 8080 |
+
+### 🔐 Authentication
+| Stack | Description | Ports |
+|-------|-------------|-------|
+| `auth/authentik/` | Authentik identity server | 9000, 9443 |
+
+### 🗄️ Databases
+| Stack | Description | Ports |
+|-------|-------------|-------|
+| `databases/` | MariaDB + PostgreSQL + Redis | 3306, 5432, 6379 |
+
+### 🔧 CI/CD
+| Stack | Description | Ports |
+|-------|-------------|-------|
+| `cicd/gitlab/` | GitLab CE + Runners | 8080, 8443, 2222 |
+| `cicd/jenkins/` | Jenkins + Agents | 8080, 50000 |
+
+### 💾 Storage
+| Stack | Description | Ports |
+|-------|-------------|-------|
+| `storage/minio/` | MinIO S3-compatible storage | 9000, 9001
 ## 🤝 Contributing
 
 Contributions are welcome! Please:

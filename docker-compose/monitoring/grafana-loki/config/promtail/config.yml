@@ -1,0 +1,57 @@
+# Promtail config - ships Docker & system logs to Loki
+# Service discovery via Docker socket + static system logs
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Docker container logs via service discovery
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      - source_labels: ["__meta_docker_container_name"]
+        regex: "/(.*)"
+        target_label: container
+      - source_labels: ["__meta_docker_container_log_stream"]
+        target_label: stream
+      - source_labels: ["__meta_docker_container_label_com_docker_compose_service"]
+        target_label: service
+      - source_labels: ["__meta_docker_container_label_project"]
+        target_label: project
+    pipeline_stages:
+      - docker: {}
+      - timestamp:
+          source: time
+          format: RFC3339
+      - output:
+          source: output
+      - labels:
+          stream:
+      - match:
+          selector: '{container="grafana-loki-grafana"}'
+          stages:
+            - regex:
+                source: log
+                expression: "(?P<level>\\w+).*"
+            - labels:
+                level:
+          action: keep
+
+  # System logs
+  - job_name: system
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: varlogs
+          host: ${HOSTNAME}
+          __path__: /var/log/*.log

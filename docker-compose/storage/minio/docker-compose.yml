@@ -1,0 +1,86 @@
+# MinIO Stack - High-performance S3-compatible object storage
+# Usage: cd storage/minio && cp .env.example .env && docker compose up -d
+#
+# Services:
+#   - minio   : MinIO server (S3 API)
+#   - mc      : MinIO Client (one-time setup, creates buckets & users)
+#
+# Access:
+#   Console : http://localhost:9001
+#   S3 API  : http://localhost:9000
+#
+# Default credentials (CHANGE THESE!):
+#   Username: minioadmin
+#   Password: minioadmin
+#
+# After first start, the mc service will:
+#   1. Wait for MinIO to be ready
+#   2. Configure a local alias 'myminio' pointing to http://minio:9000
+#   3. Create buckets: backups, media, datasets, logs
+#   4. Create a service user 'minio-user' with read/write access to all buckets
+#
+# To access via S3 SDK:
+#   endpoint: http://localhost:9000
+#   access_key: minio-user (or minioadmin)
+#   secret_key: <from .env or default>
+#   use_ssl: false (set to true if behind TLS proxy)
+
+version: "3.8"
+
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: unless-stopped
+    command: server --console-address ":9001" /data
+    environment:
+      - TZ=${TZ}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "${MINIO_API_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - minio-net
+
+  mc:
+    image: minio/mc:latest
+    container_name: minio-mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc config host add myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} --api s3v4) do
+        echo '...waiting for MinIO...'
+        sleep 1
+      done;
+      echo 'MinIO configured, creating buckets...';
+      /usr/bin/mc mb myminio/backups;
+      /usr/bin/mc mb myminio/media;
+      /usr/bin/mc mb myminio/datasets;
+      /usr/bin/mc mb myminio/logs;
+      echo 'Creating service user...';
+      /usr/bin/mc admin user add myminio minio-user ${MINIO_SERVICE_PASSWORD};
+      /usr/bin/mc admin policy attach myminio readwrite --user minio-user;
+      echo 'Setup complete. Container will exit.';
+      "
+    volumes:
+      - minio-data:/minio
+    networks:
+      - minio-net
+
+volumes:
+  minio-data:
+    driver: local
+
+networks:
+  minio-net:
+    name: minio-net
+    driver: bridge

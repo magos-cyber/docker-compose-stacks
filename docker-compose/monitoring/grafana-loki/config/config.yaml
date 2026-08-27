@@ -1,0 +1,52 @@
+# Loki configuration - local filesystem storage
+# Production-ready defaults: auth disabled, 30d retention, TSDB index
+
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9095
+  grace_period: 30s
+  http_timeout: 30s
+
+common:
+  instance_addr: 127.0.0.1
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+ruler:
+  storage:
+    type: local
+    local:
+      directory: /loki/rules
+
+compactor:
+  working_directory: /loki/compactor
+  compaction_interval: 10m
+  retention_deletes_enabled: true
+
+limits_config:
+  retention_period: 30d
+  max_streams_per_user: 10000
+  max_line_size: 256KB
+
+table_manager:
+  retention_deletes_enabled: true
+  retention_period: 30d

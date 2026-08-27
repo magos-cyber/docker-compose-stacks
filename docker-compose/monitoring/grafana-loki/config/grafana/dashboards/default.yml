@@ -1,0 +1,14 @@
+# Grafana dashboard provider for Loki
+apiVersion: 1
+
+providers:
+  - name: loki
+    orgId: 1
+    folder: Loki
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    updateIntervalSeconds: 30
+    editable: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
