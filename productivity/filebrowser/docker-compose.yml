@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    container_name: filebrowser
+    restart: unless-stopped
+    ports:
+      - "8082:80"
+    volumes:
+      - ./data:/srv
+      - ./config.json:/etc/config.json
+    environment:
+      - FB_BASEURL=/files
