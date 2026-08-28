@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  nextcloud:
+    image: nextcloud:latest
+    container_name: nextcloud
+    restart: unless-stopped
+    ports:
+      - "8888:80"
+    volumes:
+      - nextcloud-data:/var/www/html
+    environment:
+      - TZ=Europe/Athens
+volumes:
+  nextcloud-data:
